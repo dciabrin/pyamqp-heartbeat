@@ -43,4 +43,16 @@ receives the query and makes a collateral RPC call to the RPC server.
 In this test both the RPC server ans the API service running in uwsgi
 hold AMQP connections the rabbitmq server.
 
-## Test 3: TODO
+## Test 3: eventlet WSGI API server
+
+Run the original RPC server as in test 1, and the API service runs
+under a eventlet-based WSGI server:
+
+    ./server.py > server.log &
+    ./eventlet-api.py > eventlet-api.log &
+
+the RPC service is now accessible on localhost:8090:
+
+    curl http://localhost:8090/\?num\=1336
+
+As in Test 2, the heartbeat can be inspected after the first API call.

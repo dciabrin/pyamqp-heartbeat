@@ -9,6 +9,7 @@ verify_ssl = true
 uwsgi = "*"
 oslo-messaging = "*"
 oslo-log = "*"
+eventlet = "*"
 
 [requires]
 python_version = "3.7"
