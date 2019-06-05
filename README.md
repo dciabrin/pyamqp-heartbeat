@@ -1,14 +1,50 @@
 # Behaviour of the AMQP heartbeat thread under various execution models
 
-## Quick setup
+The main goal of this project is to test and develop [oslo.messaging](https://github.com/openstack/oslo.messaging) behaviors related to rabbitmq and especially the [rabbitmq driver](https://docs.openstack.org/oslo.messaging/latest/configuration/opts.html#oslo-messaging-rabbit)
 
-    pipenv install
-    pipenv run ./setup-containers.sh
-    pipenv shell
+## Setup
 
-The setup installs the neccessary python dependencies, and runs a
-rabbitmq server in a podman or docker container. After the installation, you
-are in the virtual env prepared by `pipenv` for you.
+You can use setup your environment in 2 ways:
+- The quick setup
+- The debug setup
+
+The *quick setup* will install dependencies from the internet by using
+the latest available releases of the needed requirements.
+
+The *debug setup* let's you setup your virtual environment free from any
+dependencies, and in a second time it allow to you to install local packages
+in a development mode to let's you tweak, modify and test your changes.
+
+### Quick setup
+
+```
+pipenv install
+pipenv run ./setup-containers.sh
+pipenv shell
+```
+
+The setup installs the neccessary python dependencies from the latest
+available official releases, and runs a rabbitmq server in a podman or docker
+container. After the installation, you are in the virtual env prepared
+by `pipenv` for you.
+
+### Debug setup
+
+```
+pipenv
+pipenv run ./setup-containers.sh
+pipenv install -e /local/path/to/your/oslo.messaging/clone/oslo.messaging
+pipenv shell
+pip list | grep "oslo.messaging"
+oslo.messaging     9.7.2.dev1 /local/path/to/your/oslo.messaging/clone/oslo.messaging
+```
+
+The debug setup runs a rabbitmq server in a podman or docker container.
+This method let's you install a local version of your oslo.messaging
+to help you to modify, debug, and test.
+After the installation, you are in the virtual env prepared
+by `pipenv` for you and you can add changes to your oslo.messaging clone to
+test them interactively by using the following scenarios.
 
 ## Test 1: thread-based server
 
