@@ -3,3 +3,4 @@ __pycache__/
 Pipfile.lock
 *.log
 *~
+oslo.messaging/

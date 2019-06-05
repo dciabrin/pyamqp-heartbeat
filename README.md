@@ -92,3 +92,35 @@ the RPC service is now accessible on localhost:8090:
     curl http://localhost:8090/\?num\=1336
 
 As in Test 2, the heartbeat can be inspected after the first API call.
+
+## Test 4: Apache mod_wsgi server with monkey patched environment
+
+Run the original RPC server as in test 1
+in an apache mod_wsgi environment
+with and monkey patched with eventlet, and the API service runs
+under a eventlet-based WSGI server (by example):
+
+```
+pipenv run ./start-oslo-mod_wsgi.sh &
+./eventlet-api.py > eventlet-api.log &
+```
+
+The previous example use upstream release of oslo.messaging and installed
+as a dependencies like in test 1 but you can choose to install and use a
+local clone of `oslo.messaging` or a local copy of another dependencies
+(`oslo.utils` by example or `pyamqp`) by passing the root path of your local
+clone as a parameter of your command, like the following example:
+
+```
+pipenv run ./start-oslo-mod_wsgi.sh ~/dev/openstack/oslo.messaging &
+./eventlet-api.py > eventlet-api.log &
+```
+
+Or local clone will be installed and used in your fresh created
+apache mod_wsgi container.
+
+the RPC service is now accessible on localhost:8090:
+
+    curl http://localhost:8090/\?num\=1336
+
+As in Test 2, the heartbeat can be inspected after the first API call.

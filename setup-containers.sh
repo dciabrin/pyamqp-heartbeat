@@ -1,12 +1,5 @@
 #!/bin/bash -eux
-CONTAINER_RUNTIME=podman
-if [ -z "$(which podman)" ]; then
-    if [ -z "$(which docker)" ]; then
-        echo "No container runtimes are available please install podman or docker first"
-        exit 1
-    fi
-    CONTAINER_RUNTIME=docker
-fi
+source runtime.sh
 echo "Checking sudo permissions to run ${CONTAINER_RUNTIME} commands"
 sudo true
 sudo ${CONTAINER_RUNTIME} ps -aq --filter name=oslomsg | xargs --no-run-if-empty sudo ${CONTAINER_RUNTIME} rm --force

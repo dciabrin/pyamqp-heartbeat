@@ -1,0 +1,7 @@
+niet
+pbr
+oslo.messaging
+oslo.utils
+oslo.log
+eventlet
+
