@@ -9,6 +9,7 @@ verify_ssl = true
 pbr = "*"
 uwsgi = "*"
 oslo-messaging = "*"
+oslo-utils = "*"
 oslo-log = "*"
 eventlet = "*"
 
