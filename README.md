@@ -7,8 +7,8 @@
     pipenv shell
 
 The setup installs the neccessary python dependencies, and runs a
-rabbitmq server in a docker container. After the installation, you are
-in the virtual env prepared by `pipenv` for you.
+rabbitmq server in a podman or docker container. After the installation, you
+are in the virtual env prepared by `pipenv` for you.
 
 ## Test 1: thread-based server
 
