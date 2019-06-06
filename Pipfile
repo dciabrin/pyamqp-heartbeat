@@ -6,8 +6,11 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
+niet = "*"
+pbr = "*"
 uwsgi = "*"
 oslo-messaging = "*"
+oslo-utils = "*"
 oslo-log = "*"
 eventlet = "*"
 

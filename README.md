@@ -1,14 +1,50 @@
 # Behaviour of the AMQP heartbeat thread under various execution models
 
-## Quick setup
+The main goal of this project is to test and develop [oslo.messaging](https://github.com/openstack/oslo.messaging) behaviors related to rabbitmq and especially the [rabbitmq driver](https://docs.openstack.org/oslo.messaging/latest/configuration/opts.html#oslo-messaging-rabbit)
 
-    pipenv install
-    pipenv run ./setup-containers.sh
-    pipenv shell
+## Setup
 
-The setup installs the neccessary python dependencies, and runs a
-rabbitmq server in a docker container. After the installation, you are
-in the virtual env prepared by `pipenv` for you.
+You can use setup your environment in 2 ways:
+- The quick setup
+- The debug setup
+
+The *quick setup* will install dependencies from the internet by using
+the latest available releases of the needed requirements.
+
+The *debug setup* let's you setup your virtual environment free from any
+dependencies, and in a second time it allow to you to install local packages
+in a development mode to let's you tweak, modify and test your changes.
+
+### Quick setup
+
+```
+pipenv install
+pipenv run ./setup-containers.sh
+pipenv shell
+```
+
+The setup installs the neccessary python dependencies from the latest
+available official releases, and runs a rabbitmq server in a podman or docker
+container. After the installation, you are in the virtual env prepared
+by `pipenv` for you.
+
+### Debug setup
+
+```
+pipenv
+pipenv run ./setup-containers.sh
+pipenv install -e /local/path/to/your/oslo.messaging/clone/oslo.messaging
+pipenv shell
+pip list | grep "oslo.messaging"
+oslo.messaging     9.7.2.dev1 /local/path/to/your/oslo.messaging/clone/oslo.messaging
+```
+
+The debug setup runs a rabbitmq server in a podman or docker container.
+This method let's you install a local version of your oslo.messaging
+to help you to modify, debug, and test.
+After the installation, you are in the virtual env prepared
+by `pipenv` for you and you can add changes to your oslo.messaging clone to
+test them interactively by using the following scenarios.
 
 ## Test 1: thread-based server
 
@@ -50,6 +86,38 @@ under a eventlet-based WSGI server:
 
     ./server.py > server.log &
     ./eventlet-api.py > eventlet-api.log &
+
+the RPC service is now accessible on localhost:8090:
+
+    curl http://localhost:8090/\?num\=1336
+
+As in Test 2, the heartbeat can be inspected after the first API call.
+
+## Test 4: Apache mod_wsgi server with monkey patched environment
+
+Run the original RPC server as in test 1
+in an apache mod_wsgi environment
+with and monkey patched with eventlet, and the API service runs
+under a eventlet-based WSGI server (by example):
+
+```
+pipenv run ./start-oslo-mod_wsgi.sh &
+./eventlet-api.py > eventlet-api.log &
+```
+
+The previous example use upstream release of oslo.messaging and installed
+as a dependencies like in test 1 but you can choose to install and use a
+local clone of `oslo.messaging` or a local copy of another dependencies
+(`oslo.utils` by example or `pyamqp`) by passing the root path of your local
+clone as a parameter of your command, like the following example:
+
+```
+pipenv run ./start-oslo-mod_wsgi.sh ~/dev/openstack/oslo.messaging &
+./eventlet-api.py > eventlet-api.log &
+```
+
+Or local clone will be installed and used in your fresh created
+apache mod_wsgi container.
 
 the RPC service is now accessible on localhost:8090:
 
