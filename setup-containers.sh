@@ -8,8 +8,6 @@ sudo ${CONTAINER_RUNTIME} run -d \
     -e RABBITMQ_NODENAME=rabbitmq \
     -p 5672:5672 \
     -p 15672:15672 \
-    --net=host \
-    --hostname my-rabbit \
     --name oslomsg-rabbitmq \
     rabbitmq:management
 sudo ${CONTAINER_RUNTIME} exec oslomsg-rabbitmq \
