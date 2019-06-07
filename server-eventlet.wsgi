@@ -7,6 +7,7 @@ import server
 
 
 def application(environ, start_response):
+    server.monkey_patch_if_needed(eventlet_turned_on=True)
     transport_url = os.getenv('TRANSPORT_URL',
         default='rabbit://testuser:testpwd@127.0.0.1:5672/')
     server.start_server(transport_url)

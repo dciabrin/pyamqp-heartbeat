@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import os
+import threading
 
 import eventlet
 
@@ -16,24 +17,34 @@ class TestEndpoint(object):
         return arg+1
 
 
-def run_oslo(eventlet_turned_on=False):
-    if eventlet_turned_on:
-        print("----------------------------------------------")
-        print("/!\  Running a monkey patched environment  /!\\")
-        print("----------------------------------------------")
-        eventlet.monkey_patch()
+def get_transport_url(host, port, user, pwd):
+    return 'rabbit://{user}:{pwd}@{host}:{port}/'.format(
+        host=host, port=port, user=user, pwd=pwd
+    )
 
-    default_transport_url = 'rabbit://testuser:testpwd@localhost:5672/'
-    transport_url = os.getenv('TRANSPORT_URL', default=default_transport_url)
-    transport = oslo_messaging.get_rpc_transport(cfg.CONF)
+
+def start_server(transport_url, executor='threading', need_to_wait=False):
+    print("Used transport url: {}".format(transport_url))
+    transport = oslo_messaging.get_rpc_transport(cfg.CONF, transport_url)
     target = oslo_messaging.Target(topic='test', server='myname')
     endpoints = [TestEndpoint()]
     
     server = oslo_messaging.get_rpc_server(
-        transport, target, endpoints, executor='threading')
+        transport, target, endpoints, executor=executor)
     server.start()
-    while True:
-        time.sleep(1)
+    if need_to_wait:
+        while True:
+            time.sleep(1)
+
+
+def monkey_patch_if_needed(eventlet_turned_on=False):
+    msg = "/!\  Running a *NON* monkey patched environment /!\\"
+    if eventlet_turned_on:
+        eventlet.monkey_patch()
+        msg = "/!\  Running a monkey patched environment  /!\\"
+    print("-" * len(msg))
+    print(msg)
+    print("-" * len(msg))
 
 
 def main():
@@ -42,8 +53,28 @@ def main():
                         help='turn on eventlet and monkey patch the env')
     parser.add_argument("--heartbeat-timeout", help="the heartbeat timeout",
                         default=60)
+    parser.add_argument("--rabbit-host", default="127.0.0.1")
+    parser.add_argument("--rabbit-port", default="5672")
+    parser.add_argument("--rabbit-user", default="testuser")
+    parser.add_argument("--rabbit-user-pwd", default="testpwd")
+    parser.add_argument("--run-oslo-in-thread", action='store_true',
+        default=False)
+    parser.add_argument("--oslo-executor", default='threading')
     args = parser.parse_args()
-    run_oslo(args.eventlet_turned_on)
+    transport_url = get_transport_url(
+        args.rabbit_host,
+        args.rabbit_port,
+        args.rabbit_user,
+        args.rabbit_user_pwd)
+    print("Default transport url: {}".format(transport_url))
+    monkey_patch_if_needed(args.eventlet_turned_on)
+    if args.run_oslo_in_thread:
+        oslo_server = threading.Thread(target=start_server,
+            args=(transport_url, args.oslo_executor,))
+        oslo_server.start()
+        oslo_server.join()
+    else:
+        start_server(transport_url, args.oslo_executor)
 
 
 if __name__ == "__main__":
