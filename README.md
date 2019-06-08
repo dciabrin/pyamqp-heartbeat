@@ -147,6 +147,34 @@ curl http://localhost:8090/\?num\=1336
 
 As in Test 2, the heartbeat can be inspected after the first API call.
 
+### Advanced usages for test 4
+
+You can choose to start your test by using mod_wsgi like is described in the
+previous section but maybe you want to test behaviours without eventlet turned
+on or with the oslo.messaging server embdded in a high level greenthread, then
+this section is made for you.
+
+In the previous section by using the `start-oslo-mod_wsgi.sh` you have build
+a container image who contains apache and mod_wsgi who will run a wsgi apps that
+will start your oslo.messaging server.
+
+You have choice between 3 apps modes:
+- eventlet turned on and oslo.messaging who will use greenthreads (the default) - `server-eventlet.wsgi`
+- eventlet turned off and oslo.messaging who will use pthreads - `server-eventlet.wsgi`
+- eventlet turned on with your server apps (`server.py.start_server`) which will executed in a greenthread and oslo.messaging who will use greenthread too - `server-eventlet-gthread.wsgi`
+
+To execute a specific mode please use the following command and replace the
+wsgi filename by one of the 3 previous described modes, example `server-eventlet.gthread.wsgi`:
+
+```sh
+sudo podman run -it \
+    --rm \
+    -p 8000:80 \
+    -e TRANSPORT_URL=rabbit://testuser:testpwd@$(sudo podman inspect oslomsg-rabbitmq  | niet '.[0].NetworkSettings.IPAddress'):5672/ \
+    --name oslo_mod_wsgi \
+    oslo_mod_wsgi \
+    server-eventlet-gthread.wsgi # replace the filename here
+```
 
 ## How to reproduce the heartbeat issue
 
@@ -183,37 +211,16 @@ sudo podman run -it \
     server.wsgi
 ```
 
-Now observe your new created connection into the dashboard and observe 
-that this connection still active all the time.
+the RPC services is now accessible on localhost:8000 (mod_wsgi):
 
-### Advanced usages for test 4
-
-You can choose to start your test by using mod_wsgi like is described in the
-previous section but maybe you want to test behaviours without eventlet turned
-on or with the oslo.messaging server embdded in a high level greenthread, then
-this section is made for you.
-
-In the previous section by using the `start-oslo-mod_wsgi.sh` you have build
-a container image who contains apache and mod_wsgi who will run a wsgi apps that
-will start your oslo.messaging server.
-
-You have choice between 3 apps modes:
-- eventlet turned on and oslo.messaging who will use greenthreads (the default) - `server-eventlet.wsgi`
-- eventlet turned off and oslo.messaging who will use pthreads - `server-eventlet.wsgi`
-- eventlet turned on with your server apps (`server.py.start_server`) which will executed in a greenthread and oslo.messaging who will use greenthread too - `server-eventlet-gthread.wsgi`
-
-To execute a specific mode please use the following command and replace the
-wsgi filename by one of the 3 previous described modes, example `server-eventlet.gthread.wsgi`:
+You send a request to it by using:
 
 ```sh
-sudo podman run -it \
-    --rm \
-    -p 8000:80 \
-    -e TRANSPORT_URL=rabbit://testuser:testpwd@$(sudo podman inspect oslomsg-rabbitmq  | niet '.[0].NetworkSettings.IPAddress'):5672/ \
-    --name oslo_mod_wsgi \
-    oslo_mod_wsgi \
-    server-eventlet-gthread.wsgi # replace the filename here
+curl 0.0.0.0:8000
 ```
+
+Now observe your new created connection into the dashboard and observe
+that this connection stay active even after a long period.
 
 ## Server advanced usages
 
