@@ -1,5 +1,10 @@
 #!/bin/bash -eux
 source runtime.sh
+if ! rabbit_is_running; then
+    echo "Rabbit server isn't running... launching an auto setup"
+    exit 1
+fi
+sudo ${CONTAINER_RUNTIME} ps -aq --filter name=oslo_mod_wsgi | xargs --no-run-if-empty sudo ${CONTAINER_RUNTIME} rm --force
 pkg_name=false
 if [ $# -eq 1 ]; then
     local_pkg=$1
