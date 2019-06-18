@@ -7,6 +7,7 @@ import eventlet
 
 from oslo_config import cfg
 import oslo_messaging
+from oslo_messaging._drivers import common as driver_common
 import time
 import log  # noqa
 
@@ -26,6 +27,7 @@ def get_transport_url(host, port, user, pwd):
 def start_server(transport_url, executor='threading', need_to_wait=False):
     print("Used transport url: {}".format(transport_url))
     transport = oslo_messaging.get_rpc_transport(cfg.CONF, transport_url)
+    transport._driver._get_connection(driver_common.PURPOSE_SEND)
     target = oslo_messaging.Target(topic='test', server='myname')
     endpoints = [TestEndpoint()]
     

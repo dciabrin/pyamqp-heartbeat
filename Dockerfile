@@ -5,5 +5,9 @@ RUN mkdir /setup
 ADD * /setup
 RUN pip install -r /setup/requirements.txt
 RUN ls /setup
-RUN if [ -d /setup/$LOCAL_PKG ]; then cd /setup/$LOCAL_PKG; python setup.py develop; fi
+# next line we want to remove the upstream package if
+# user want to test it locally
+# example oslo.messaging where LOCAL_PKG="oslo.messaging"
+# (extracted from the basename)
+RUN if [ -d /app/$LOCAL_PKG ]; then cd /app/$LOCAL_PKG; pip uninstall -y $LOCAL_PKG; python setup.py develop; fi
 CMD ["server-eventlet.wsgi"]
